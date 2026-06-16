@@ -1,57 +1,85 @@
+"""Test fixtures: containerised Postgres + Redis, FastAPI test client.
+
+Containers are started at conftest import time so that os.environ is
+populated BEFORE any src.* module is imported — pydantic-settings reads
+env vars when Settings() is first instantiated.
+"""
+
+import atexit
 import os
 import uuid
 
 import pytest_asyncio
+import redis.asyncio as aioredis
 from httpx import ASGITransport, AsyncClient
-from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+from redis.asyncio import Redis
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
+from sqlalchemy.pool import NullPool
 from sqlmodel import select
-from src.db.base import Base
 from testcontainers.postgres import PostgresContainer
 from testcontainers.redis import RedisContainer
 
+# ── Start containers eagerly — BEFORE any src.* import ───────────────────────
+_pg_ctr = PostgresContainer("postgres:16-alpine")
+_redis_ctr = RedisContainer("redis:7-alpine")
+_pg_ctr.start()
+_redis_ctr.start()
+atexit.register(_pg_ctr.stop)
+atexit.register(_redis_ctr.stop)
+
+os.environ.update(
+    {
+        "DATABASE_URL": _pg_ctr.get_connection_url().replace("psycopg2", "asyncpg"),
+        "REDIS_URL": f"redis://{_redis_ctr.get_container_host_ip()}:{_redis_ctr.get_exposed_port(6379)}/0",
+        "SERVICE_SECRET": "test-secret",
+        "RS256_PUBLIC_KEY": "-----BEGIN PUBLIC KEY-----\\nTEST\\n-----END PUBLIC KEY-----",
+        "DEBUG": "true",
+        "SKIP_SERVICE_AUTH": "true",
+    }
+)
+
+# Safe to import src.* now
+from src.db.base import Base  # noqa: E402
+from src.models.user_profile import UserPreference, UserProfile  # noqa: E402
+
+_TEST_USER_ID = uuid.UUID("11111111-1111-1111-1111-111111111111")
+
 
 @pytest_asyncio.fixture(scope="session")
-async def pg_url() -> str:
-    with PostgresContainer("postgres:16-alpine") as pg:
-        yield pg.get_connection_url().replace("psycopg2", "asyncpg")
-
-
-@pytest_asyncio.fixture(scope="session")
-async def redis_url() -> str:
-    with RedisContainer("redis:7-alpine") as redis:
-        yield f"redis://{redis.get_container_host_ip()}:{redis.get_exposed_port(6379)}/0"
-
-
-@pytest_asyncio.fixture(scope="function")
-async def client(pg_url: str, redis_url: str, monkeypatch):
-    monkeypatch.setenv("DATABASE_URL", pg_url)
-    monkeypatch.setenv("REDIS_URL", redis_url)
-    monkeypatch.setenv("SERVICE_SECRET", "test-secret")
-    monkeypatch.setenv("RS256_PUBLIC_KEY", "-----BEGIN PUBLIC KEY-----\\nTEST\\n-----END PUBLIC KEY-----")
-    monkeypatch.setenv("DEBUG", "true")
-    monkeypatch.setenv("SKIP_SERVICE_AUTH", "true")
-
-    engine = create_async_engine(pg_url)
+async def db_engine() -> AsyncEngine:
+    """Session-scoped Postgres engine with all tables created."""
+    engine = create_async_engine(os.environ["DATABASE_URL"], echo=False, poolclass=NullPool)
     async with engine.begin() as conn:
         await conn.run_sync(Base.create_all)
+    yield engine
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.drop_all)
+    await engine.dispose()
 
-    session_maker = async_sessionmaker(engine, expire_on_commit=False)
-    async with session_maker() as session:
-        from src.models.user_profile import UserPreference, UserProfile
 
-        user_id = uuid.UUID("11111111-1111-1111-1111-111111111111")
-        existing_profile = (
-            await session.execute(select(UserProfile).where(UserProfile.id == user_id))
+@pytest_asyncio.fixture(scope="session")
+async def redis_client() -> Redis:
+    """Session-scoped Redis client connected to the test container."""
+    client = aioredis.from_url(os.environ["REDIS_URL"], decode_responses=True)
+    yield client
+    await client.aclose()
+
+
+@pytest_asyncio.fixture(scope="session")
+async def client(db_engine: AsyncEngine, redis_client: Redis) -> AsyncClient:
+    """Session-scoped ASGI test client with seeded test user."""
+    async with AsyncSession(db_engine, expire_on_commit=False) as session:
+        existing = (
+            await session.execute(select(UserProfile).where(UserProfile.id == _TEST_USER_ID))
         ).scalar_one_or_none()
-        if existing_profile is None:
-            session.add(UserProfile(id=user_id, display_name="tester"))
+        if existing is None:
+            session.add(UserProfile(id=_TEST_USER_ID, display_name="tester"))
             await session.flush()
-
         existing_prefs = (
-            await session.execute(select(UserPreference).where(UserPreference.user_id == user_id))
+            await session.execute(select(UserPreference).where(UserPreference.user_id == _TEST_USER_ID))
         ).scalar_one_or_none()
         if existing_prefs is None:
-            session.add(UserPreference(user_id=user_id))
+            session.add(UserPreference(user_id=_TEST_USER_ID))
         await session.commit()
 
     from server import create_app
@@ -59,9 +87,3 @@ async def client(pg_url: str, redis_url: str, monkeypatch):
     app = create_app()
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
         yield c
-
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.drop_all)
-    await engine.dispose()
-
-    os.environ.pop("DEBUG", None)
