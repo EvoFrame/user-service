@@ -1,0 +1,25 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: user-service
+    static_configs:
+      - targets: ["user-service-app:8080"]
+        labels:
+          service: user-service
+          component: app
+
+  - job_name: user-service-postgres
+    static_configs:
+      - targets: ["user-service-db-exporter:9187"]
+        labels:
+          service: user-service
+          component: postgres
+
+  - job_name: user-service-redis
+    static_configs:
+      - targets: ["user-service-redis-exporter:9121"]
+        labels:
+          service: user-service
+          component: redis
