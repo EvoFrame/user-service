@@ -1,0 +1,33 @@
+# Root compose — includes all service fragments.
+
+services:
+  user-service:
+    build:
+      context: .
+      dockerfile: .docker/project/Dockerfile
+    profiles:
+      - services
+    container_name: ${COMPOSE_PROJECT_NAME}-app
+    env_file: .env
+    ports:
+      - "127.0.0.1:${SERVICE_PORT}:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - app_net
+      - evoframe-internal
+    restart: unless-stopped
+
+networks:
+  app_net:
+    name: ${COMPOSE_PROJECT_NAME}_app
+  evoframe-internal:
+    name: evoframe-internal
+    driver: bridge
+
+include:
+  - path: .docker/dev-stacks/postgresql/compose.yml
+  - path: .docker/dev-stacks/redis/compose.yml
