@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+#MISE description="Restart Redis container"
+docker compose -f .docker/dev-stacks/redis/compose.yml restart redis

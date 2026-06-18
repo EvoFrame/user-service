@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+#MISE description="Restart app container"
+docker compose -f .docker/project/compose.yml restart

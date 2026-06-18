@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+#MISE description="Start full dev stack (app + db + redis)"
+docker compose --profile services up -d --remove-orphans

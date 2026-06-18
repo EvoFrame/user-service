@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+#MISE description="Start PostgreSQL + pgAdmin UI"
+docker compose -f .docker/dev-stacks/postgresql/compose.yml --profile services --profile ui up -d --remove-orphans

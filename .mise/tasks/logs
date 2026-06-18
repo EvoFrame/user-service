@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+#MISE description="📋  Follow container logs (optional: pass service name)"
+docker compose logs -f "$@"

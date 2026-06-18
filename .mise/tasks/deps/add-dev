@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+#MISE description="Add a dev dependency — usage: mise run deps:add-dev <package>"
+uv add --group dev "$1"

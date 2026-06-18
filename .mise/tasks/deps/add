@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+#MISE description="Add a runtime dependency — usage: mise run deps:add <package>"
+uv add "$1"

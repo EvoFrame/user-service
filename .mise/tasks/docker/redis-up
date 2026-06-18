@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+#MISE description="Start Redis only"
+docker compose -f .docker/dev-stacks/redis/compose.yml --profile services up -d --remove-orphans

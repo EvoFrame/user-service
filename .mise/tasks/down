@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+#MISE description="🐳  Stop dev stack"
+docker compose --profile services --profile ui --profile monitoring down

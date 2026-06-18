@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+#MISE description="Stop and remove all containers"
+docker compose --profile services --profile ui --profile monitoring down

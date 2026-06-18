@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+#MISE description="Start db + redis without app (for running app locally)"
+#MISE alias="ds-up"
+docker compose --profile dev-stack up -d --remove-orphans

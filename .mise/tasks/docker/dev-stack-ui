@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+#MISE description="Start db + redis + their UIs (pgAdmin, RedisInsight)"
+#MISE alias="ds-ui"
+docker compose --profile dev-stack --profile ui up -d --remove-orphans

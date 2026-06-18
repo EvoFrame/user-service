@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+#MISE description="Run full test suite with coverage"
+uv run pytest resources/tests --cov=resources/src --cov-report=term-missing
