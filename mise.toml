@@ -8,7 +8,7 @@ uv sync
 """
 
 [tools]
-python = "3.14"
+python = "3.13"
 uv = "latest"
 
 [env]
