@@ -32,18 +32,17 @@ All events include the envelope fields:
 ## Development
 
 ```bash
-task init-env
-devbox shell
-task dev
+mise run init-env
+mise run dev
 ```
 
 ## Common tasks
 
 ```bash
-task test
-task lint
-task format
-task migrate
-task up
-task down
+mise run test
+mise run lint
+mise run format
+mise run migrate
+mise run up
+mise run down
 ```
