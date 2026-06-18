@@ -8,7 +8,6 @@ import pytest
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
 from sqlmodel import select
-
 from src.events.consumers.auth_user_registered import run
 from src.models.user_profile import UserPreference, UserProfile
 
@@ -44,9 +43,7 @@ async def test_consumer_creates_profile_from_stream_event(db_engine: AsyncEngine
     )
 
     async with AsyncSession(db_engine, expire_on_commit=False) as session:
-        profile = (
-            await session.execute(select(UserProfile).where(UserProfile.id == user_id))
-        ).scalar_one_or_none()
+        profile = (await session.execute(select(UserProfile).where(UserProfile.id == user_id))).scalar_one_or_none()
 
     assert profile is not None
     assert profile.display_name == "integration"

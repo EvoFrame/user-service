@@ -5,7 +5,6 @@ import uuid
 import pytest
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
 from sqlmodel import select
-
 from src.events.consumers.auth_user_registered import handle
 from src.models.user_profile import UserPreference, UserProfile
 
