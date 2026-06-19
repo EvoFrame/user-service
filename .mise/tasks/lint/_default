@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-#MISE description="🔍  Run linter"
-uv run ruff check resources/src resources/scripts resources/tests
