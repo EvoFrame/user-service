@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-#MISE description="Follow app container logs"
-docker compose -f .docker/project/compose.yml logs -f

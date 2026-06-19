@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-#MISE description="Follow Redis container logs"
-docker compose -f .docker/dev-stacks/redis/compose.yml logs -f redis

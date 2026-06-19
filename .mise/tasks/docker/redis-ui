@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-#MISE description="Start Redis + RedisInsight UI"
-docker compose -f .docker/dev-stacks/redis/compose.yml --profile services --profile ui up -d --remove-orphans

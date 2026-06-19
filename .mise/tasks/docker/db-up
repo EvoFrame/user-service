@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-#MISE description="Start PostgreSQL only"
-docker compose -f .docker/dev-stacks/postgresql/compose.yml --profile services up -d --remove-orphans

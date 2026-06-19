@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-#MISE description="🐳  Start full stack + admin UIs"
-docker compose --profile services --profile ui up -d --remove-orphans

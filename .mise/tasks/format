@@ -1,4 +1,0 @@
-#!/usr/bin/env bash
-#MISE description="✨  Auto-format code"
-uv run ruff check --select I --fix resources/src resources/scripts resources/tests
-uv run ruff format resources/src resources/scripts resources/tests

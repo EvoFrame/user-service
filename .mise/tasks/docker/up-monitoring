@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-#MISE description="Start full stack + all monitoring exporters"
-docker compose --profile services --profile monitoring up -d --remove-orphans

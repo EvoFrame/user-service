@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #MISE description="Copy all *.env.*example files to *.env*"
 #MISE alias="ie"
+set -e
 env_files=$(find . -type f -name "*.env.*example")
 for f in $env_files; do
   target=$(echo "$f" | sed -e "s/.example$//")
