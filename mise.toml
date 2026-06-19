@@ -1,9 +1,6 @@
 [hooks]
 enter = """
 mise install --quiet
-if [ -f .env.local ]; then
-  export $(grep -v '^[[:space:]]*#' .env.local | grep '=' | sed 's/[[:space:]]*#[^=]*$//' | xargs)
-fi
 uv sync
 """
 
