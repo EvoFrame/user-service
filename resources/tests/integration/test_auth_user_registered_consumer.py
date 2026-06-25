@@ -8,6 +8,7 @@ import pytest
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
 from sqlmodel import select
+
 from src.events.consumers.auth_user_registered import run
 from src.models.user_profile import UserPreference, UserProfile
 
